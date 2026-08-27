@@ -10,6 +10,13 @@ server/build/
 *.env
 !server/config/server.env.example
 
+# Caché del editor (clangd, IntelliSense)
+server/.cache/
+compile_commands.json
+
+# Logs generados en tiempo de ejecución
+*.log
+
 # Capturas pesadas opcionales (descomentar si no se quieren versionar pcaps gigantes)
 # wireshark/captures/*.pcapng
 # wireshark/captures/*.pcap
