@@ -1,0 +1,14 @@
+{
+  "C_Cpp.default.includePath": [
+    "${workspaceFolder}/server/include",
+    "${workspaceFolder}/server/src"
+  ],
+  "C_Cpp.default.compilerPath": "/usr/bin/gcc",
+  "C_Cpp.default.cStandard": "c17",
+  "C_Cpp.default.compileCommands": "${workspaceFolder}/server/compile_commands.json",
+  "C_Cpp.intelliSenseEngine": "default",
+  "clangd.arguments": [
+    "--compile-commands-dir=${workspaceFolder}/server"
+  ],
+  "C_Cpp_Runner.msvcBatchPath": ""
+}

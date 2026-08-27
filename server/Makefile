@@ -1,21 +1,18 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -Iinclude -pthread -g
-SRC = $(wildcard src/*.c)
-OBJ = $(patsubst src/%.c, build/%.o, $(SRC))
-TARGET = build/server
+CFLAGS = -Wall -Wextra -pthread -Iinclude
+SRC = src/main.c src/udp_listener.c src/tcp_listener.c src/nodos.c src/logger.c
+BIN = build/servidor
 
-all: dirs $(TARGET)
+all: $(BIN)
 
-dirs:
+$(BIN): $(SRC)
 	mkdir -p build
-
-$(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
-
-build/%.o: src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -o $(BIN) $(SRC)
 
 clean:
 	rm -rf build/*
 
-.PHONY: all dirs clean
+run: all
+	./$(BIN)
+
+.PHONY: all clean run

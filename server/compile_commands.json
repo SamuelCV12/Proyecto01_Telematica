@@ -1,0 +1,22 @@
+[
+  {
+    "directory": "/Users/samuel/Desktop/Proyecto01Telematica/server",
+    "command": "gcc -Wall -Wextra -pthread -Iinclude -o build/servidor src/main.c",
+    "file": "/Users/samuel/Desktop/Proyecto01Telematica/server/src/main.c"
+  },
+  {
+    "directory": "/Users/samuel/Desktop/Proyecto01Telematica/server",
+    "command": "gcc -Wall -Wextra -pthread -Iinclude -o build/servidor src/udp_listener.c",
+    "file": "/Users/samuel/Desktop/Proyecto01Telematica/server/src/udp_listener.c"
+  },
+  {
+    "directory": "/Users/samuel/Desktop/Proyecto01Telematica/server",
+    "command": "gcc -Wall -Wextra -pthread -Iinclude -o build/servidor src/tcp_listener.c",
+    "file": "/Users/samuel/Desktop/Proyecto01Telematica/server/src/tcp_listener.c"
+  },
+  {
+    "directory": "/Users/samuel/Desktop/Proyecto01Telematica/server",
+    "command": "gcc -Wall -Wextra -pthread -Iinclude -o build/servidor src/nodos.c",
+    "file": "/Users/samuel/Desktop/Proyecto01Telematica/server/src/nodos.c"
+  }
+]

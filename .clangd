@@ -1,0 +1,6 @@
+CompileFlags:
+  Add:
+    - -Wall
+    - -Wextra
+    - -pthread
+  CompilationDatabase: /Users/samuel/Desktop/Proyecto01Telematica/server

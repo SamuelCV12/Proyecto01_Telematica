@@ -1,0 +1,12 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define MAX_NODES 50
+#define BUFFER_SIZE 512
+#define SELECT_TIMEOUT_SEC 1
+#define SERVER_UDP_PORT 9001
+#define SERVER_TCP_PORT 9002
+
+#define UMBRAL_TEMP_ALTA 40.0
+
+#endif
