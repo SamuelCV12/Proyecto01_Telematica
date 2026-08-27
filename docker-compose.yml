@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  telemetry-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: telemetry_server
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./server/config/server.env.example
+    restart: unless-stopped

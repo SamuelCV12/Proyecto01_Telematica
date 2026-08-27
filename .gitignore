@@ -1,0 +1,15 @@
+# Compilación y binarios
+server/build/
+*.o
+*.out
+*.exe
+*.dSYM/
+.DS_Store
+
+# Variables de entorno con credenciales/datos reales
+*.env
+!server/config/server.env.example
+
+# Capturas pesadas opcionales (descomentar si no se quieren versionar pcaps gigantes)
+# wireshark/captures/*.pcapng
+# wireshark/captures/*.pcap
