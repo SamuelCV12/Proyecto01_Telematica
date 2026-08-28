@@ -1,11 +1,18 @@
-FROM gcc:latest
+FROM gcc:13 AS build
 
 WORKDIR /app
+COPY src/ src/
+COPY include/ include/
+COPY Makefile .
 
-COPY . .
+RUN make all
 
-RUN make
+FROM debian:bookworm-slim
 
-EXPOSE 8080
+WORKDIR /app
+COPY --from=build /app/build/servidor .
 
-CMD ["./build/server"]
+EXPOSE 9001/udp
+EXPOSE 9002/tcp
+
+CMD ["./servidor"]

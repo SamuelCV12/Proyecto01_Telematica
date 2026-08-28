@@ -8,6 +8,8 @@ static FILE *archivo_log = NULL;
 static pthread_mutex_t mutex_log = PTHREAD_MUTEX_INITIALIZER;
 
 void logger_init(const char *ruta_archivo) {
+  setvbuf(stdout, NULL, _IONBF, 0); // desactiva el buffering de stdout
+
   archivo_log = fopen(ruta_archivo, "a");
   if (archivo_log == NULL) {
     perror("[LOGGER] no se pudo abrir el archivo de log");
