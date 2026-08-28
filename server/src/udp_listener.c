@@ -1,5 +1,6 @@
 #include "udp_listener.h"
 #include "config.h"
+#include "config_loader.h"
 #include "logger.h"
 #include "nodos.h"
 #include <arpa/inet.h>
@@ -49,7 +50,7 @@ void *hilo_udp(void *arg) {
   memset(&direccion, 0, sizeof(direccion));
   direccion.sin_family = AF_INET;
   direccion.sin_addr.s_addr = INADDR_ANY;
-  direccion.sin_port = htons(SERVER_UDP_PORT);
+  direccion.sin_port = htons(server_udp_port);
 
   if (bind(sock_udp, (struct sockaddr *)&direccion, sizeof(direccion)) < 0) {
     log_msg(LOG_ERROR, "Error en bind UDP");
@@ -57,7 +58,7 @@ void *hilo_udp(void *arg) {
     return NULL;
   }
 
-  log_msg(LOG_INFO, "UDP escuchando en puerto %d", SERVER_UDP_PORT);
+  log_msg(LOG_INFO, "UDP escuchando en puerto %d", server_udp_port);
 
   char buffer[BUFFER_SIZE];
   struct sockaddr_in cliente;

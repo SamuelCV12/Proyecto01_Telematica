@@ -11,6 +11,7 @@ FROM debian:bookworm-slim
 
 WORKDIR /app
 COPY --from=build /app/build/servidor .
+COPY config/ config/
 
 EXPOSE 9001/udp
 EXPOSE 9002/tcp

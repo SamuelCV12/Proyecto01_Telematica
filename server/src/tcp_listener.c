@@ -1,5 +1,6 @@
 #include "tcp_listener.h"
 #include "config.h"
+#include "config_loader.h"
 #include "logger.h"
 #include "nodos.h"
 #include <arpa/inet.h>
@@ -33,11 +34,13 @@ static void construir_respuesta_status(const char *id, char *respuesta,
   if (nodo == NULL) {
     snprintf(respuesta, tam, "ERROR|NODE_NOT_FOUND|%s\n", id);
   } else {
-    snprintf(
-        respuesta, tam,
-        "STATUS|%s|TEMP|%.2f|HUM|%.2f|CONSUMO|%.2f|VIBRACION|%.2f|ESTADO|%s\n",
-        nodo->id, nodo->temperatura, nodo->humedad, nodo->consumo_energetico,
-        nodo->vibracion, nodo->estado);
+    const char *actividad = nodo_esta_activo(nodo) ? "ACTIVO" : "INACTIVO";
+    snprintf(respuesta, tam,
+             "STATUS|%s|TEMP|%.2f|HUM|%.2f|CONSUMO|%.2f|VIBRACION|%.2f|ESTADO|%"
+             "s|CONEXION|%s\n",
+             nodo->id, nodo->temperatura, nodo->humedad,
+             nodo->consumo_energetico, nodo->vibracion, nodo->estado,
+             actividad);
   }
 
   pthread_mutex_unlock(&mutex_tabla);
@@ -46,13 +49,51 @@ static void construir_respuesta_status(const char *id, char *respuesta,
 static void construir_respuesta_lista(char *respuesta, size_t tam) {
   pthread_mutex_lock(&mutex_tabla);
 
-  snprintf(respuesta, tam, "NODES|%d", cantidad_nodos);
+  int activos = contar_nodos_activos();
+
+  snprintf(respuesta, tam, "NODES|%d", activos);
   for (int i = 0; i < cantidad_nodos; i++) {
-    char item[48];
-    snprintf(item, sizeof(item), "|%s", tabla_nodos[i].id);
-    strncat(respuesta, item, tam - strlen(respuesta) - 1);
+    if (nodo_esta_activo(&tabla_nodos[i])) {
+      char item[48];
+      snprintf(item, sizeof(item), "|%s", tabla_nodos[i].id);
+      strncat(respuesta, item, tam - strlen(respuesta) - 1);
+    }
   }
   strncat(respuesta, "\n", tam - strlen(respuesta) - 1);
+
+  pthread_mutex_unlock(&mutex_tabla);
+}
+
+static void construir_respuesta_alertas(char *respuesta, size_t tam) {
+  pthread_mutex_lock(&mutex_tabla);
+
+  snprintf(respuesta, tam, "ALERTS|%d", cantidad_alertas);
+  for (int i = 0; i < cantidad_alertas; i++) {
+    char item[64];
+    snprintf(item, sizeof(item), "|%s:%s:%.2f:%ld",
+             historial_alertas[i].nodo_id, historial_alertas[i].variable,
+             historial_alertas[i].valor, (long)historial_alertas[i].timestamp);
+    if (strlen(respuesta) + strlen(item) < tam - 2) {
+      strncat(respuesta, item, tam - strlen(respuesta) - 1);
+    } else {
+      break;
+    }
+  }
+  strncat(respuesta, "\n", tam - strlen(respuesta) - 1);
+
+  pthread_mutex_unlock(&mutex_tabla);
+}
+
+static void construir_respuesta_system_status(char *respuesta, size_t tam) {
+  pthread_mutex_lock(&mutex_tabla);
+
+  int activos = contar_nodos_activos();
+  long uptime_seg = (long)(time(NULL) - hora_inicio_servidor);
+
+  snprintf(respuesta, tam,
+           "SYSTEM_STATUS|NODOS_TOTAL|%d|NODOS_ACTIVOS|%d|ALERTAS_TOTAL|%d|"
+           "UPTIME_SEG|%ld\n",
+           cantidad_nodos, activos, cantidad_alertas, uptime_seg);
 
   pthread_mutex_unlock(&mutex_tabla);
 }
@@ -87,6 +128,10 @@ void *atender_operador(void *arg) {
     }
   } else if (tipo != NULL && strcmp(tipo, "LIST_NODES") == 0) {
     construir_respuesta_lista(respuesta, sizeof(respuesta));
+  } else if (tipo != NULL && strcmp(tipo, "GET_ALERTS") == 0) {
+    construir_respuesta_alertas(respuesta, sizeof(respuesta));
+  } else if (tipo != NULL && strcmp(tipo, "GET_SYSTEM_STATUS") == 0) {
+    construir_respuesta_system_status(respuesta, sizeof(respuesta));
   } else {
     snprintf(respuesta, sizeof(respuesta), "ERROR|UNKNOWN_COMMAND\n");
     log_msg(LOG_WARN, "Comando TCP desconocido recibido");
@@ -114,7 +159,7 @@ void *hilo_tcp(void *arg) {
   memset(&direccion, 0, sizeof(direccion));
   direccion.sin_family = AF_INET;
   direccion.sin_addr.s_addr = INADDR_ANY;
-  direccion.sin_port = htons(SERVER_TCP_PORT);
+  direccion.sin_port = htons(server_tcp_port);
 
   if (bind(sock_tcp, (struct sockaddr *)&direccion, sizeof(direccion)) < 0) {
     log_msg(LOG_ERROR, "Error en bind TCP");
@@ -128,7 +173,7 @@ void *hilo_tcp(void *arg) {
     return NULL;
   }
 
-  log_msg(LOG_INFO, "TCP escuchando en puerto %d", SERVER_TCP_PORT);
+  log_msg(LOG_INFO, "TCP escuchando en puerto %d", server_tcp_port);
 
   while (!apagando) {
     fd_set lectura;
@@ -163,11 +208,6 @@ void *hilo_tcp(void *arg) {
     }
 
     ArgOperador *info = malloc(sizeof(ArgOperador));
-    if (info == NULL) {
-      log_msg(LOG_ERROR, "Error de memoria al crear ArgOperador");
-      close(sock_cliente);
-      continue;
-    }
     info->socket_cliente = sock_cliente;
 
     pthread_t hilo_operador;

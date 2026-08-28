@@ -1,3 +1,4 @@
+#include "config_loader.h"
 #include "logger.h"
 #include "nodos.h"
 #include "tcp_listener.h"
@@ -17,6 +18,8 @@ void manejador_senal(int sig) {
 int main(void) {
   logger_init("server.log");
   log_msg(LOG_INFO, "Servidor iniciando...");
+
+  cargar_configuracion("config/server.env");
 
   signal(SIGINT, manejador_senal);
   signal(SIGTERM, manejador_senal);

@@ -1,0 +1,10 @@
+services:
+  telemetria-server:
+    build: .
+    container_name: telemetria-server
+    ports:
+      - "9001:9001/udp"
+      - "9002:9002/tcp"
+    volumes:
+      - ./server.log:/app/server.log
+    restart: unless-stopped

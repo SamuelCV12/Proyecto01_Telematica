@@ -8,11 +8,12 @@ server/build/
 
 # Variables de entorno con credenciales/datos reales
 *.env
-!server/config/server.env.example
+!server/config/server.env
 
 # Caché del editor (clangd, IntelliSense)
 server/.cache/
 compile_commands.json
+
 
 # Logs generados en tiempo de ejecución
 *.log
@@ -20,3 +21,4 @@ compile_commands.json
 # Capturas pesadas opcionales (descomentar si no se quieren versionar pcaps gigantes)
 # wireshark/captures/*.pcapng
 # wireshark/captures/*.pcap
+
