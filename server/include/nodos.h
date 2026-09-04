@@ -31,7 +31,8 @@ extern int cantidad_alertas;
 extern pthread_mutex_t mutex_tabla;
 extern time_t hora_inicio_servidor;
 
-void inicializar_tabla_nodos(void);
+int inicializar_tabla_nodos(void);
+void cerrar_persistencia(void);
 NodoTelemetria *buscar_o_crear_nodo(const char *id);
 void actualizar_medicion(const char *id, const char *variable, float valor);
 void registrar_alerta(const char *id, const char *variable, float valor);

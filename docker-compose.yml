@@ -9,4 +9,9 @@ services:
       - "9002:9002/tcp"
     env_file:
       - ./server/config/server.env.example
+    volumes:
+      - telemetry-data:/app/data
     restart: unless-stopped
+
+volumes:
+  telemetry-data:

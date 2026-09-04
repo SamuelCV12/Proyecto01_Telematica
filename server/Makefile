@@ -7,7 +7,7 @@ all: $(BIN)
 
 $(BIN): $(SRC)
 	mkdir -p build
-	$(CC) $(CFLAGS) -o $(BIN) $(SRC)
+	$(CC) $(CFLAGS) -o $(BIN) $(SRC) -lsqlite3
 
 clean:
 	rm -rf build/*

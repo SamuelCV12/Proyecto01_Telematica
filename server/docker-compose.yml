@@ -7,4 +7,8 @@ services:
       - "9002:9002/tcp"
     volumes:
       - ./server.log:/app/server.log
+      - telemetry-data:/app/data
     restart: unless-stopped
+
+volumes:
+  telemetry-data:
