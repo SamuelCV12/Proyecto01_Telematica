@@ -24,7 +24,11 @@ int main(void) {
   signal(SIGINT, manejador_senal);
   signal(SIGTERM, manejador_senal);
 
-  inicializar_tabla_nodos();
+  if (!inicializar_tabla_nodos()) {
+    log_msg(LOG_ERROR, "El servidor no puede iniciar sin persistencia SQLite");
+    logger_close();
+    return 1;
+  }
 
   pthread_t hilo_udp_id, hilo_tcp_id;
 
@@ -54,6 +58,7 @@ int main(void) {
   pthread_join(hilo_tcp_id, NULL);
 
   log_msg(LOG_INFO, "Servidor apagado correctamente.");
+  cerrar_persistencia();
   logger_close();
   return 0;
 }

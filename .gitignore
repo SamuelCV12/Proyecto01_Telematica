@@ -17,8 +17,9 @@ compile_commands.json
 
 # Logs generados en tiempo de ejecución
 *.log
+operator-client/__pycache__/
+operator-client/gui/__pycache__/
 
 # Capturas pesadas opcionales (descomentar si no se quieren versionar pcaps gigantes)
 # wireshark/captures/*.pcapng
 # wireshark/captures/*.pcap
-

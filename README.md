@@ -15,6 +15,7 @@ Proyecto de arquitectura cliente-servidor y nodos IoT para el monitoreo de telem
 
 - GCC / Clang y `make`
 - Docker & Docker Compose
+- Python 3 y Tkinter para el cliente operador
 
 ## Ejecución Rápida
 

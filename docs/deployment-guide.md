@@ -6,8 +6,8 @@
 
 ## 2. Configuración de Security Groups (Puertos)
 - `SSH`: Puerto 22 (restringido a tu IP).
-- `Servidor Telemetría`: Puerto 8080 (TCP/UDP según protocolo definido).
-- `Servicio Web / Operador`: Puerto 80 / 443 / 3000.
+- `Servidor Telemetría`: UDP `9001` y TCP `9002`.
+- `Servicio Web / Operador`: Puerto TCP `3000`.
 
 ## 3. Configuración DNS
 - Asociar registro `A` o `CNAME` apuntando a la IP pública elástica (Elastic IP) de la instancia.
@@ -19,3 +19,7 @@ cd <DIRECTORIO_REPOSITORIO>
 cp server/config/server.env.example server/config/server.env
 docker-compose up -d --build
 ```
+
+El servicio web queda disponible en `http://IP_PUBLICA:3000`. Para acceder a él
+desde Internet, agrega TCP `3000` al Security Group. El contenedor web se
+conecta internamente al servidor mediante `telemetry-server:9002`.
