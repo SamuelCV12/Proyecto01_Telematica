@@ -4,6 +4,8 @@
 #include "logger.h"
 #include "nodos.h"
 #include <arpa/inet.h>
+#include <errno.h>
+#include <math.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +15,65 @@
 #include <unistd.h>
 
 extern volatile int apagando;
+
+static int convertir_valor(const char *texto, float *valor) {
+  char *fin = NULL;
+
+  if (texto == NULL || *texto == '\0') {
+    return 0;
+  }
+
+  errno = 0;
+  float convertido = strtof(texto, &fin);
+  if (errno == ERANGE || fin == texto || *fin != '\0' ||
+      !isfinite(convertido)) {
+    return 0;
+  }
+
+  *valor = convertido;
+  return 1;
+}
+
+static int variable_valida(const char *variable) {
+  return strcmp(variable, "TEMP") == 0 || strcmp(variable, "HUM") == 0 ||
+         strcmp(variable, "CONSUMO") == 0 ||
+         strcmp(variable, "VIBRACION") == 0;
+}
+
+static int valor_valido(const char *variable, float valor) {
+  if (strcmp(variable, "TEMP") == 0) {
+    return valor >= -50.0f && valor <= 100.0f;
+  }
+  if (strcmp(variable, "HUM") == 0) {
+    return valor >= 0.0f && valor <= 100.0f;
+  }
+  if (strcmp(variable, "CONSUMO") == 0 ||
+      strcmp(variable, "VIBRACION") == 0) {
+    return valor >= 0.0f;
+  }
+  return 0;
+}
+
+static int alerta_valida(const char *codigo) {
+  return strcmp(codigo, "TEMP_HIGH") == 0 ||
+         strcmp(codigo, "HUM_HIGH") == 0 ||
+         strcmp(codigo, "CONSUMO_HIGH") == 0 ||
+         strcmp(codigo, "VIBRACION_HIGH") == 0;
+}
+
+static int id_nodo_valido(const char *id) {
+  if (id == NULL || strlen(id) >= sizeof(((NodoTelemetria *)0)->id) ||
+      strncmp(id, "NODE", 4) != 0 || id[4] == '\0') {
+    return 0;
+  }
+
+  for (const char *caracter = id + 4; *caracter != '\0'; caracter++) {
+    if (*caracter < '0' || *caracter > '9') {
+      return 0;
+    }
+  }
+  return 1;
+}
 
 static void procesar_mensaje(char *buffer) {
   log_msg(LOG_INFO, "UDP recibido: %s", buffer);
@@ -28,6 +89,10 @@ static void procesar_mensaje(char *buffer) {
     log_msg(LOG_WARN, "Mensaje UDP mal formado, descartado");
     return;
   }
+  if (!id_nodo_valido(id)) {
+    log_msg(LOG_WARN, "ERR_02: identificador de nodo no autorizado: %s", id);
+    return;
+  }
 
   if (strcmp(tipo, "TELEMETRY") == 0) {
     char *variable = strtok(NULL, "|");
@@ -38,7 +103,26 @@ static void procesar_mensaje(char *buffer) {
       return;
     }
 
-    float valor = atof(valor_str);
+    if (strtok(NULL, "|") != NULL) {
+      log_msg(LOG_WARN, "ERR_01: TELEMETRY contiene campos adicionales");
+      return;
+    }
+
+    float valor;
+    if (!variable_valida(variable)) {
+      log_msg(LOG_WARN, "ERR_01: variable TELEMETRY desconocida: %s", variable);
+      return;
+    }
+    if (!convertir_valor(valor_str, &valor)) {
+      log_msg(LOG_WARN, "ERR_01: valor TELEMETRY no numérico: %s", valor_str);
+      return;
+    }
+    if (!valor_valido(variable, valor)) {
+      log_msg(LOG_WARN, "ERR_03: valor TELEMETRY fuera de rango: %s=%.2f",
+              variable, valor);
+      return;
+    }
+
     actualizar_medicion(id, variable, valor);
     log_msg(LOG_INFO, "Nodo %s actualizado: %s=%.2f", id, variable, valor);
   } else if (strcmp(tipo, "ALERT") == 0) {
@@ -50,7 +134,26 @@ static void procesar_mensaje(char *buffer) {
       return;
     }
 
-    float valor = atof(valor_str);
+    if (strtok(NULL, "|") != NULL) {
+      log_msg(LOG_WARN, "ERR_01: ALERT contiene campos adicionales");
+      return;
+    }
+
+    float valor;
+    if (!alerta_valida(codigo)) {
+      log_msg(LOG_WARN, "ERR_01: código ALERT desconocido: %s", codigo);
+      return;
+    }
+    if (!convertir_valor(valor_str, &valor)) {
+      log_msg(LOG_WARN, "ERR_01: valor ALERT no numérico: %s", valor_str);
+      return;
+    }
+    if (valor < 0.0f) {
+      log_msg(LOG_WARN, "ERR_03: valor ALERT fuera de rango: %s=%.2f", codigo,
+              valor);
+      return;
+    }
+
     registrar_alerta(id, codigo, valor);
     log_msg(LOG_WARN, "Alerta recibida de %s: %s=%.2f", id, codigo, valor);
   } else {
