@@ -220,6 +220,7 @@ void *hilo_udp(void *arg) {
     }
 
     buffer[bytes] = '\0';
+    buffer[strcspn(buffer, "\r\n")] = '\0';
     procesar_mensaje(buffer);
   }
 
