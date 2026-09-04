@@ -18,23 +18,44 @@ static void procesar_mensaje(char *buffer) {
   log_msg(LOG_INFO, "UDP recibido: %s", buffer);
 
   char *tipo = strtok(buffer, "|");
-  if (tipo == NULL || strcmp(tipo, "TELEMETRY") != 0) {
+  if (tipo == NULL) {
     log_msg(LOG_WARN, "Mensaje UDP con tipo desconocido, descartado");
     return;
   }
 
   char *id = strtok(NULL, "|");
-  char *variable = strtok(NULL, "|");
-  char *valor_str = strtok(NULL, "|");
-
-  if (id == NULL || variable == NULL || valor_str == NULL) {
+  if (id == NULL) {
     log_msg(LOG_WARN, "Mensaje UDP mal formado, descartado");
     return;
   }
 
-  float valor = atof(valor_str);
-  actualizar_medicion(id, variable, valor);
-  log_msg(LOG_INFO, "Nodo %s actualizado: %s=%.2f", id, variable, valor);
+  if (strcmp(tipo, "TELEMETRY") == 0) {
+    char *variable = strtok(NULL, "|");
+    char *valor_str = strtok(NULL, "|");
+
+    if (variable == NULL || valor_str == NULL) {
+      log_msg(LOG_WARN, "Mensaje TELEMETRY mal formado, descartado");
+      return;
+    }
+
+    float valor = atof(valor_str);
+    actualizar_medicion(id, variable, valor);
+    log_msg(LOG_INFO, "Nodo %s actualizado: %s=%.2f", id, variable, valor);
+  } else if (strcmp(tipo, "ALERT") == 0) {
+    char *codigo = strtok(NULL, "|");
+    char *valor_str = strtok(NULL, "|");
+
+    if (codigo == NULL || valor_str == NULL) {
+      log_msg(LOG_WARN, "Mensaje ALERT mal formado, descartado");
+      return;
+    }
+
+    float valor = atof(valor_str);
+    registrar_alerta(id, codigo, valor);
+    log_msg(LOG_WARN, "Alerta recibida de %s: %s=%.2f", id, codigo, valor);
+  } else {
+    log_msg(LOG_WARN, "Mensaje UDP con tipo desconocido, descartado");
+  }
 }
 
 void *hilo_udp(void *arg) {

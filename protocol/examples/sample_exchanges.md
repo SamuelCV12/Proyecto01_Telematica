@@ -1,16 +1,20 @@
 # Ejemplos de Flujo de Mensajes
 
-### 1. Intercambio de Telemetría Normal
+### 1. Telemetría normal (UDP)
 
 ```text
-Node -> Server:   TELEMETRY|NODE_01|1710000000|TEMP:24.5,HUM:60
-Server -> Node:   ACK|SERVER|1710000001|STATUS:OK
+Node -> Server:   TELEMETRY|NODE03|TEMP|24.8
 ```
 
-### 2. Flujo de Alerta Crítica
+### 2. Consulta de estado (TCP)
 
 ```text
-Node -> Server:   ALERT|NODE_02|1710000010|CRITICAL:PRESSURE_HIGH
-Server -> Node:   ACK|SERVER|1710000011|STATUS:RECEIVED
-Server -> Client: ALERT_FORWARD|NODE_02|1710000011|CRITICAL:PRESSURE_HIGH
+Operator -> Server: GET_STATUS|NODE03
+Server -> Operator: STATUS|NODE03|TEMP|24.80|HUM|0.00|CONSUMO|0.00|VIBRACION|0.00|ESTADO|OK|CONEXION|ACTIVO
+```
+
+### 3. Alerta (UDP)
+
+```text
+Node -> Server:   ALERT|NODE03|TEMP_HIGH|42.1
 ```
