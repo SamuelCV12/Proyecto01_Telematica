@@ -22,3 +22,20 @@ Proyecto de arquitectura cliente-servidor y nodos IoT para el monitoreo de telem
 ```bash
 docker-compose up --build
 ```
+
+El servicio `telemetry-nodes` inicia cinco nodos IoT simulados por defecto y
+envía telemetría UDP al servicio `telemetry-server`. La cantidad de nodos se
+puede cambiar con `NODE_COUNT`:
+
+```bash
+NODE_COUNT=5 docker-compose up --build telemetry-server telemetry-nodes
+```
+
+Para ejecutar un nodo individual fuera de Docker:
+
+```bash
+python -m nodes.node NODE01
+python -m nodes.node NODE01 --force-anomaly TEMP
+```
+
+La documentación específica está en `nodes/README.md`.

@@ -185,6 +185,24 @@ NodoTelemetria *buscar_o_crear_nodo(const char *id) {
   return NULL;
 }
 
+void registrar_secuencia(const char *id, uint64_t secuencia) {
+  pthread_mutex_lock(&mutex_tabla);
+
+  NodoTelemetria *nodo = buscar_o_crear_nodo(id);
+  if (nodo != NULL) {
+    if (nodo->tiene_secuencia && secuencia > nodo->ultima_secuencia &&
+      secuencia - nodo->ultima_secuencia > 1) {
+      nodo->mensajes_perdidos += secuencia - nodo->ultima_secuencia - 1;
+    }
+    if (!nodo->tiene_secuencia || secuencia > nodo->ultima_secuencia) {
+      nodo->ultima_secuencia = secuencia;
+      nodo->tiene_secuencia = 1;
+    }
+  }
+
+  pthread_mutex_unlock(&mutex_tabla);
+}
+
 int nodo_esta_activo(const NodoTelemetria *nodo) {
   time_t ahora = time(NULL);
   return (ahora - nodo->ultima_actualizacion) <= TIMEOUT_INACTIVO_SEC;

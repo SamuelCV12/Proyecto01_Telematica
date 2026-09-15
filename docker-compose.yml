@@ -28,5 +28,24 @@ services:
       - telemetry-server
     restart: unless-stopped
 
+  telemetry-nodes:
+    build:
+      context: .
+      dockerfile: ./nodes/Dockerfile
+    container_name: telemetry_nodes
+    environment:
+      SERVER_HOSTNAME: ${SERVER_HOSTNAME:-telemetry-server}
+      SERVER_UDP_PORT: ${SERVER_UDP_PORT:-9001}
+      SERVER_TCP_PORT: ${SERVER_TCP_PORT:-9002}
+      TELEMETRY_INTERVAL: ${TELEMETRY_INTERVAL:-5}
+      SOCKET_TIMEOUT: ${SOCKET_TIMEOUT:-3}
+      ANOMALY_PROBABILITY: ${ANOMALY_PROBABILITY:-0.05}
+      RETRY_ATTEMPTS: ${RETRY_ATTEMPTS:-3}
+      RETRY_BACKOFF: ${RETRY_BACKOFF:-2}
+      NODE_COUNT: ${NODE_COUNT:-5}
+    depends_on:
+      - telemetry-server
+    restart: unless-stopped
+
 volumes:
   telemetry-data:

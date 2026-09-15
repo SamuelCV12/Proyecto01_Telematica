@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include <pthread.h>
+#include <stdint.h>
 #include <time.h>
 
 typedef struct {
@@ -13,6 +14,9 @@ typedef struct {
   float vibracion;
   char estado[16];
   time_t ultima_actualizacion;
+  uint64_t ultima_secuencia;
+  uint64_t mensajes_perdidos;
+  int tiene_secuencia;
 } NodoTelemetria;
 
 typedef struct {
@@ -35,6 +39,7 @@ int inicializar_tabla_nodos(void);
 void cerrar_persistencia(void);
 NodoTelemetria *buscar_o_crear_nodo(const char *id);
 void actualizar_medicion(const char *id, const char *variable, float valor);
+void registrar_secuencia(const char *id, uint64_t secuencia);
 void registrar_alerta(const char *id, const char *variable, float valor);
 int nodo_esta_activo(const NodoTelemetria *nodo);
 int contar_nodos_activos(void);
