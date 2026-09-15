@@ -11,7 +11,7 @@ Módulo backend del sistema de telemetría implementado en lenguaje C con socket
 
 2. Ejecutar el servidor:
    ```bash
-   ./build/server
+   ./build/servidor
    ```
 
 3. Limpiar compilación:
