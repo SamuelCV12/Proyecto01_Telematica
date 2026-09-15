@@ -3,7 +3,7 @@
 ### 1. Telemetría normal (UDP)
 
 ```text
-Node -> Server:   TELEMETRY|NODE03|TEMP|24.8
+Node -> Server:   TELEMETRY|NODE03|SEQ:101|TEMP|24.8
 ```
 
 ### 2. Consulta de estado (TCP)
