@@ -34,6 +34,24 @@ static int convertir_valor(const char *texto, float *valor) {
   return 1;
 }
 
+static int convertir_secuencia(const char *texto, uint64_t *secuencia) {
+  char *fin = NULL;
+  unsigned long long convertido;
+
+  if (texto == NULL || strncmp(texto, "SEQ:", 4) != 0 || texto[4] == '\0') {
+    return 0;
+  }
+
+  errno = 0;
+  convertido = strtoull(texto + 4, &fin, 10);
+  if (errno == ERANGE || fin == texto + 4 || *fin != '\0') {
+    return 0;
+  }
+
+  *secuencia = (uint64_t)convertido;
+  return 1;
+}
+
 static int variable_valida(const char *variable) {
   return strcmp(variable, "TEMP") == 0 || strcmp(variable, "HUM") == 0 ||
          strcmp(variable, "CONSUMO") == 0 ||
@@ -95,10 +113,11 @@ static void procesar_mensaje(char *buffer) {
   }
 
   if (strcmp(tipo, "TELEMETRY") == 0) {
+    char *secuencia_str = strtok(NULL, "|");
     char *variable = strtok(NULL, "|");
     char *valor_str = strtok(NULL, "|");
 
-    if (variable == NULL || valor_str == NULL) {
+    if (secuencia_str == NULL || variable == NULL || valor_str == NULL) {
       log_msg(LOG_WARN, "Mensaje TELEMETRY mal formado, descartado");
       return;
     }
@@ -108,7 +127,13 @@ static void procesar_mensaje(char *buffer) {
       return;
     }
 
+    uint64_t secuencia;
     float valor;
+    if (!convertir_secuencia(secuencia_str, &secuencia)) {
+      log_msg(LOG_WARN, "ERR_01: secuencia TELEMETRY invalida: %s",
+              secuencia_str);
+      return;
+    }
     if (!variable_valida(variable)) {
       log_msg(LOG_WARN, "ERR_01: variable TELEMETRY desconocida: %s", variable);
       return;
@@ -123,8 +148,10 @@ static void procesar_mensaje(char *buffer) {
       return;
     }
 
+    registrar_secuencia(id, secuencia);
     actualizar_medicion(id, variable, valor);
-    log_msg(LOG_INFO, "Nodo %s actualizado: %s=%.2f", id, variable, valor);
+    log_msg(LOG_INFO, "Nodo %s actualizado: SEQ=%llu %s=%.2f", id,
+      (unsigned long long)secuencia, variable, valor);
   } else if (strcmp(tipo, "ALERT") == 0) {
     char *codigo = strtok(NULL, "|");
     char *valor_str = strtok(NULL, "|");

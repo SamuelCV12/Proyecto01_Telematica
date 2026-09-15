@@ -7,7 +7,11 @@ en salto de línea cuando se envían por TCP:
 
 ### Telemetría (UDP)
 
-`TELEMETRY|NODE03|TEMP|24.8`
+`TELEMETRY|NODE03|SEQ:101|TEMP|24.8`
+
+`SEQ` es un número entero no negativo, incremental por nodo. El servidor usa
+los saltos entre secuencias para contabilizar datagramas UDP potencialmente
+perdidos. La telemetría continúa siendo *fire and forget*: no existe ACK UDP.
 
 ### Consulta de estado (TCP)
 
@@ -25,6 +29,8 @@ medido. Las alertas se almacenan en el historial del servidor.
 - El identificador debe tener el formato `NODE` seguido de uno o más dígitos.
 - Las variables de telemetría permitidas son `TEMP`, `HUM`, `CONSUMO` y
   `VIBRACION`.
+- Los mensajes `TELEMETRY` contienen exactamente cinco campos: tipo, ID,
+  secuencia, variable y valor.
 - `TEMP` acepta valores entre `-50` y `100`; `HUM`, entre `0` y `100`.
 - `CONSUMO` y `VIBRACION` deben ser valores no negativos.
 - Los códigos de alerta permitidos son `TEMP_HIGH`, `HUM_HIGH`,
