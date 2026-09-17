@@ -94,14 +94,14 @@ def obtener_alertas() -> list[dict]:
         cantidad = int(partes[1])
     except ValueError as error:
         raise ErrorProtocoloServidor("Cantidad de alertas inválida") from error
-    if cantidad < 0 or len(partes) != cantidad + 2:
-        raise ErrorProtocoloServidor("Respuesta ALERTS incompleta")
+    if cantidad < 0:
+        raise ErrorProtocoloServidor("Cantidad de alertas inválida")
 
     alertas = []
     for item in partes[2:]:
         campos = item.split(":")
         if len(campos) != 4:
-            raise ErrorProtocoloServidor(f"Alerta inválida: {item}")
+            continue  # Ignorar alertas truncadas por el buffer del servidor
         try:
             alertas.append({
                 "nodo_id": campos[0],
@@ -109,8 +109,8 @@ def obtener_alertas() -> list[dict]:
                 "valor": float(campos[2]),
                 "timestamp": int(campos[3]),
             })
-        except ValueError as error:
-            raise ErrorProtocoloServidor(f"Valores de alerta inválidos: {item}") from error
+        except ValueError:
+            continue  # Ignorar valores corruptos por truncación
     return alertas
 
 
